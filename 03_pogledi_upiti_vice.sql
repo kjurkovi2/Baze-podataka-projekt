@@ -8,6 +8,10 @@ USE biblioteka;
 -- Prikazuje sve primjerke koji nisu dostupni za normalno korištenje.
 -- Uključuje oštećene, izgubljene i rezervirane primjerke.
 
+-- DOBAR
+-- Pogled služi zaposlenicima za praćenje primjeraka koji nisu dostupni za
+-- standardno korištenje kako bi se mogla planirati zamjena, popravak ili
+-- reorganizacija fonda.
 CREATE VIEW problematicni_primjerci AS
 	SELECT p.id_primjerak, k.naslov, p.inventarni_broj, sp.naziv_statusa, l.odjel, l.polica, l.kat
 	    FROM primjerak AS p
@@ -27,6 +31,8 @@ SELECT *
 -- Prikazuje broj knjiga u svakom žanru.
 -- Uključuje i žanrove bez pridruženih knjiga.
 
+-- ovdje bi bilo bolje da umjesto broj knjiga po žanru
+-- napravim broj primjeraka po žanru
 CREATE VIEW knjige_po_zanru AS
 	SELECT z.id_zanr, z.naziv_zanra, COALESCE(COUNT(kz.id_knjiga), 0) AS broj_knjiga
 		FROM zanr AS z
@@ -42,6 +48,10 @@ SELECT *
 -- 3. Pogled: fond_po_odjelu
 -- Prikazuje ukupan broj primjeraka po odjelima knjižnice.
 
+-- DOBAR
+-- Možeš dodati:
+-- broj dostupnih primjeraka
+-- broj oštećenih po odjelu
 CREATE VIEW fond_po_odjelu AS
 	SELECT l.odjel, COUNT(p.id_primjerak) AS broj_primjeraka
 		FROM lokacija AS l
@@ -55,6 +65,9 @@ SELECT *
 -- 4. Pogled: dostupni_primjerci
 -- Prikazuje sve trenutno dostupne primjerke knjiga i njihove lokacije.
 
+-- DOBAR
+-- Malo je "listing" tip upita.
+-- Nije loš, ali nije jako analitičan.
 CREATE VIEW dostupni_primjerci AS
 	SELECT k.naslov, p.inventarni_broj, l.odjel, l.polica, l.kat
 		FROM knjiga AS k
@@ -76,6 +89,9 @@ SELECT *
 -- ili 'Izgubljeno'.
 -- Upit služi zaposlenicima za evidenciju problematičnih primjeraka.
 
+-- suvišan jer radi istu stvar kao i problematici_primjerci
+-- nepotreban/umjetan union, školski je previše
+-- za zadržati union treba mi dva seta različitih podataka
 SELECT k.naslov, p.inventarni_broj, sp.naziv_statusa, l.odjel, l.polica
 	FROM knjiga AS k
 	INNER JOIN primjerak AS p
@@ -114,6 +130,11 @@ SELECT z.naziv_zanra, COALESCE(COUNT(kz.id_knjiga), 0) AS broj_knjiga
 -- između 1.1.2023. i 31.12.2025.
 -- Upit služi za pregled novijih nabava knjižničnog fonda.
 
+-- najslabiji upit, forsiran BETWEEN, školski
+-- bolje je: "Analiza novih nabava po odjelima"
+-- ili
+-- "Pregled recentno nabavljenih primjeraka radi planiranja fonda"
+-- "Koji odjeli imaju najviše novih nabava?"
 SELECT k.naslov, p.inventarni_broj, p.datum_nabave, l.odjel
 	FROM knjiga AS k
 	INNER JOIN primjerak AS p
@@ -129,6 +150,8 @@ SELECT k.naslov, p.inventarni_broj, p.datum_nabave, l.odjel
 -- i nalaze se na 1. katu knjižnice.
 -- Upit služi za evidenciju problematičnih primjeraka po lokaciji.
 
+-- solidno, ali preusko
+-- pretvoriti ga u "Analiza problematičnih primjeraka po lokaciji"
 SELECT k.naslov, p.inventarni_broj, sp.naziv_statusa, l.odjel, l.polica, l.kat
 	FROM knjiga AS k
 	INNER JOIN primjerak AS p
