@@ -85,7 +85,7 @@ INSERT INTO izdavac (id_izdavac, naziv, drzava) VALUES
 (32, 'Klett', 'Njemacka');
 
 -- Dodatni zanrovi
-INSERT INTO zanr (id_zanr, naziv_zanra, opis) VALUES
+INSERT INTO zanr (id_zanr, naziv, opis) VALUES
 (11, 'Filozofija', 'Knjige iz filozofije i etike'),
 (12, 'Putopis', 'Djela o putovanjima i kulturama'),
 (13, 'Popularna znanost', 'Znanstvene teme pisane za siru publiku'),
@@ -1124,7 +1124,7 @@ INSERT INTO primjerak (id_primjerak, id_knjiga, id_lokacija, id_status, inventar
 (237, 237, 2, 1, 'INV-0237', '2024-07-12'),
 (238, 238, 7, 1, 'INV-0238', '2025-09-15'),
 (239, 239, 12, 1, 'INV-0239', '2026-11-18'),
-(240, 240, 17, 1, 'INV-0240', '2024-01-21');
+(240, 240, 17, 1, 'INV-0240', '2024-01-21'),
 (241, 15, 33, 18, 'INV-0241', '2025-01-03'),
 (242, 15, 1, 1, 'INV-0242', '2025-01-05'),
 (243, 28, 34, 7, 'INV-0243', '2025-01-06'),

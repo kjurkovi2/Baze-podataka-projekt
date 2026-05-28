@@ -1,7 +1,7 @@
 USE biblioteka;
 
 INSERT INTO status_primjerka (id_status, naziv, opis, dostupan) VALUES
-(1, 'Dostupno', 'Primjerak je dostupan korisnicima knjiznice.',TRUE),
+(1, 'Dostupno', 'Primjerak je dostupan korisnicima knjiznice.', TRUE),
 (2, 'Posudeno', 'Primjerak je trenutno posuden clanu knjiznice.', FALSE),
 (3, 'Rezervirano', 'Primjerak je rezerviran i trenutno nije dostupan.', FALSE),
 (4, 'Osteceno', 'Primjerak je ostecen i ne moze se koristiti.', FALSE),
@@ -27,7 +27,7 @@ INSERT INTO izdavac (id_izdavac, naziv, drzava) VALUES
 (7, 'Mozaik knjiga', 'Hrvatska'),
 (8, 'OReilly Media', 'SAD');
 
-INSERT INTO zanr (id_zanr, naziv_zanra, opis) VALUES
+INSERT INTO zanr (id_zanr, naziv, opis) VALUES
 (1, 'Roman', 'Duga prozna knjizevna forma'),
 (2, 'Fantastika', 'Djela s elementima fantastike'),
 (3, 'Znanstvena fantastika', 'Djela temeljena na znanosti i buducnosti'),
