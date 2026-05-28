@@ -1,11 +1,11 @@
 USE biblioteka;
 
-INSERT INTO status_primjerka (id_status, naziv_statusa) VALUES
-(1, 'Dostupno'),
-(2, 'Posudeno'),
-(3, 'Rezervirano'),
-(4, 'Osteceno'),
-(5, 'Izgubljeno');
+INSERT INTO status_primjerka (id_status, naziv, opis, dostupan) VALUES
+(1, 'Dostupno', 'Primjerak je dostupan korisnicima knjiznice.',TRUE),
+(2, 'Posudeno', 'Primjerak je trenutno posuden clanu knjiznice.', FALSE),
+(3, 'Rezervirano', 'Primjerak je rezerviran i trenutno nije dostupan.', FALSE),
+(4, 'Osteceno', 'Primjerak je ostecen i ne moze se koristiti.', FALSE),
+(5, 'Izgubljeno', 'Primjerak je izgubljen.', FALSE);
 
 INSERT INTO lokacija (id_lokacija, odjel, polica, kat) VALUES
 (1, 'Beletristika', 'A1', 'Prizemlje'),
