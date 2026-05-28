@@ -165,16 +165,31 @@ CREATE TABLE posudba (
     CHECK (datum_vracanja IS NULL OR datum_vracanja >= datum_posudbe)
 );
 
+CREATE TABLE razlog_kazne (
+    id_razlog INT PRIMARY KEY AUTO_INCREMENT,
+    naziv_razloga VARCHAR(30) NOT NULL UNIQUE,
+    osnovna_cijena NUMERIC(8,2) NOT NULL,
+
+    CHECK (osnovna_cijena >= 0)
+);
+
 CREATE TABLE kazna (
     id_kazna INT PRIMARY KEY AUTO_INCREMENT,
-    id_posudba INT NOT NULL UNIQUE,
+    id_posudba INT NOT NULL,
+    id_razlog INT NOT NULL,
     iznos NUMERIC(8,2) NOT NULL,
     datum DATE NOT NULL,
     placeno BOOLEAN NOT NULL DEFAULT FALSE,
 
+    UNIQUE (id_posudba, id_razlog),
+
     FOREIGN KEY (id_posudba) REFERENCES posudba(id_posudba)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
+
+    FOREIGN KEY (id_razlog) REFERENCES razlog_kazne(id_razlog)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
 
     CHECK (iznos >= 0)
 );
