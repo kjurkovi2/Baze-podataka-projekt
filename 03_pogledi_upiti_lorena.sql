@@ -1,50 +1,14 @@
+-- AUTOR: Lorena Pavličić
+
 USE biblioteka;
-
--- ------------------------------------------------------------
-
--- Član tima: Lorena Pavličić
-
--- Modul obuhvaća relacije:
--- AUTOR, IZDAVAC, KNJIGA, KNJIGA_AUTOR
-
--- Opis:
--- Ovaj modul služi za evidenciju osnovnih bibliografskih 
--- podataka o knjigama, autorima i izdavačima.
-
--- ------------------------------------------------------------
-
--- ------------------------------------------------------------
--- DOPUNA TESTNIH PODATAKA
--- ------------------------------------------------------------
-
--- Dodaju se dodatni autori i veze knjiga-autori kako bi se
--- pokazalo da jedna knjiga može imati više autora.
-
--- ------------------------------------------------------------
-
-
-INSERT IGNORE INTO autor (id_autor, ime, prezime, datum_rodenja, drzava) VALUES
-(36, 'Erich', 'Gamma', '1961-03-13', 'Švicarska'),
-(37, 'Richard', 'Helm', NULL, 'Australija'),
-(38, 'Ralph', 'Johnson', '1955-10-07', 'SAD'),
-(39, 'John', 'Vlissides', '1961-08-02', 'SAD'),
-(40, 'Abraham', 'Silberschatz', '1952-01-01', 'SAD'),
-(41, 'Henry', 'Korth', NULL, 'SAD'),
-(42, 'S.', 'Sudarshan', NULL, 'Indija');
-
-INSERT IGNORE INTO knjiga_autor (id_knjiga, id_autor, redoslijed_autora) VALUES
-(19, 36, 2),
-(19, 37, 3),
-(19, 38, 4),
-(19, 39, 5),
-(28, 40, 2),
-(28, 41, 3),
-(28, 42, 4);
-
 
 -- ------------------------------------------------------------
 -- POGLEDI
 -- ------------------------------------------------------------
+
+-- Pogled 1:
+-- Prikazuje osnovni bibliografski katalog knjiga, 
+-- uključujuči podatke o knjizi, izdavaču i autoru.
 
 CREATE OR REPLACE VIEW v_bibliografski_katalog AS
 SELECT 
@@ -63,6 +27,9 @@ JOIN izdavac i ON k.id_izdavac = i.id_izdavac
 JOIN knjiga_autor ka ON k.id_knjiga = ka.id_knjiga
 JOIN autor a ON ka.id_autor = a.id_autor;
 
+-- Pogled 2:
+-- Prikazuje broj knjiga po autoru
+
 CREATE OR REPLACE VIEW v_broj_knjiga_po_autoru AS
 SELECT
     a.id_autor,
@@ -72,6 +39,10 @@ SELECT
 FROM autor a
 LEFT JOIN knjiga_autor ka ON a.id_autor = ka.id_autor
 GROUP BY a.id_autor, a.ime, a.prezime, a.drzava;
+
+-- Pogled 3:
+-- Prikazuje broj autora po knjizi, 
+-- uključujuči naziv izdavača.
 
 CREATE OR REPLACE VIEW v_broj_autora_po_knjizi AS
 SELECT
