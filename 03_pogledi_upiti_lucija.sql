@@ -3,63 +3,53 @@
 USE biblioteka;
 
 
--- ================================================================
--- 1. POGLED: posudbe_detalji
--- ================================================================
--- pregled svake posudbe koji spaja podatke o clanu,primjerku, knjizi 
--- i neplacenim kaznama na jednom mjestu.
--- Podupit za kazne agregira neplacene iznose po posudbi kako bi
--- se izbjeglo dupliciranje redaka kada posudba ima vise kazni.
+-- 1. POGLED: ocekivane_kazne
+-- Pregled aktivnih posudbi s kašnjenjem i izračunatim iznosom kazne.
+-- Namijenjen knjižničaru pri dolasku člana po novu posudbu —
+-- omogućuje brzi pregled svih kašnjenja i iznosa koji treba naplatiti
+-- prije kreiranja nove posudbe.
 
-CREATE OR REPLACE VIEW posudbe_detalji AS
+CREATE OR REPLACE VIEW ocekivane_kazne AS
 SELECT
-    p.id_posudba,
+    c.id_clan,
     CONCAT(c.ime, ' ', c.prezime) AS clan,
-    c.telefon,
     pk.inventarni_broj,
     k.naslov,
-    p.datum_posudbe,
     p.rok_vracanja,
-    p.status,
-    GREATEST(DATEDIFF(COALESCE(p.datum_vracanja, CURDATE()), p.rok_vracanja), 0) AS dana_kasnjenja,
-    COALESCE(kz.ukupni_dug, 0) AS ukupni_dug
+    DATEDIFF(CURDATE(), p.rok_vracanja) AS dana_kasnjenja,
+    rk.osnovna_cijena,
+    DATEDIFF(CURDATE(), p.rok_vracanja) * rk.osnovna_cijena AS izracunata_kazna
 FROM posudba AS p
 INNER JOIN primjerak AS pk ON pk.id_primjerak = p.id_primjerak
 INNER JOIN knjiga AS k ON pk.id_knjiga = k.id_knjiga
 INNER JOIN clan AS c ON c.id_clan = p.id_clan
-LEFT JOIN (
-    SELECT
-        ka.id_posudba,
-        SUM(ka.iznos) AS ukupni_dug
-    FROM kazna AS ka
-    WHERE ka.placeno = FALSE
-    GROUP BY ka.id_posudba
-) AS kz ON p.id_posudba = kz.id_posudba;
+CROSS JOIN razlog_kazne AS rk
+WHERE p.status = 'Aktivno'
+  AND DATEDIFF(CURDATE(), p.rok_vracanja) > 0
+  AND rk.naziv_razloga = 'Kasnjenje';
+
+-- TEST
+-- SELECT * FROM ocekivane_kazne
 
 
--- ----------------------------------------------------------------
--- SELECT 1: Problematicne posudbe — aktivne koje kasne
--- ----------------------------------------------------------------
--- popis clanova koje treba kontaktirati jer kasne s vracanjem.
---  Rezultati su sortirani od najduzeg kasnjenja prema dolje — najhitniji slucajevi su na vrhu.
+-- SELECT 1: Pregled kašnjenja po članu
+-- Knjižničar pretražuje po id_clan ili inventarnom broju
+-- kako bi vidio sve aktivne posudbe s kašnjenjem i iznosom kazne
+-- prije odobravanja nove posudbe.
 
 SELECT
-    pd.clan,
-    pd.telefon,
-    pd.inventarni_broj,
-    pd.naslov,
-    pd.rok_vracanja,
-    pd.dana_kasnjenja,
-    pd.ukupni_dug
-FROM posudbe_detalji AS pd
-WHERE pd.status = 'Aktivno'
-  AND pd.dana_kasnjenja > 0
-ORDER BY pd.dana_kasnjenja DESC;
+    ok.clan,
+    ok.inventarni_broj,
+    ok.naslov,
+    ok.rok_vracanja,
+    ok.dana_kasnjenja,
+    ok.osnovna_cijena,
+    ok.izracunata_kazna
+FROM ocekivane_kazne AS ok
+WHERE ok.id_clan = 1
+ORDER BY ok.dana_kasnjenja DESC;
 
-
--- ================================================================
 -- 2. POGLED: zaposlenici_statistika
--- ================================================================
 -- Mjesecna statistika svakog zaposlenika.
 -- Sluzi za godisnje evaluacije.
 
@@ -85,10 +75,11 @@ LEFT JOIN kazna AS ka ON p.id_posudba = ka.id_posudba
 LEFT JOIN razlog_kazne AS rk ON rk.id_razlog = ka.id_razlog
 GROUP BY z.id_zaposlenik, godina, mjesec;
 
+-- TEST
+-- SELECT * FROM zaposlenici_statistika
 
--- ----------------------------------------------------------------
+
 -- SELECT 2: Ucinkovitost zaposlenika — godisnji izvjestaj za 2025.
--- ----------------------------------------------------------------
 -- Voditelj knjiznice na kraju godine rangira zaposlenike po aktivnosti
 -- i kvaliteti rada. Filtrira se samo 2025. godina.
 
@@ -111,9 +102,8 @@ GROUP BY zs.id_zaposlenik
 ORDER BY ukupno_izdano DESC;
 
 
--- ================================================================
+
 -- 3. POGLED: kazne_pregled
--- ================================================================
 -- Pojednostavljeni pregled kazni za analizu. 
 -- Sadrzi samo osnovne podatke: razlog, iznos, datum i status placanja.
 
@@ -126,10 +116,11 @@ SELECT
 FROM kazna AS ka
 INNER JOIN razlog_kazne AS rk ON ka.id_razlog = rk.id_razlog;
 
+-- TEST 
+-- SELECT * FROM kazne_pregled
 
--- ----------------------------------------------------------------
+
 -- SELECT 3: Kronoloski ispisane kazne po mjesecima
--- ----------------------------------------------------------------
 -- Kazne su razdvojene po tipu u stupcima za brzu usporedbu.
 -- Kazna se pripisuje mjesecu u kojem je evidentirana.
 
