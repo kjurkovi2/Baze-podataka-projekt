@@ -2,140 +2,120 @@
 
 USE biblioteka;
 
--- POGLEDI --
+-- ===========================================================================================================
+-- Pogled 1.
+-- Nedostupni primjerci s pripadajućim knjigama, statusima i lokacijama
 
--- 1. Pogled: problematični_primjerci
--- Prikazuje sve primjerke koji nisu dostupni za normalno korištenje.
--- Uključuje oštećene, izgubljene i rezervirane primjerke.
-
-CREATE VIEW problematicni_primjerci AS
-	SELECT p.id_primjerak, k.naslov, p.inventarni_broj, sp.naziv_statusa, l.odjel, l.polica, l.kat
-	    FROM primjerak AS p
-        INNER JOIN knjiga AS k
-            ON p.id_knjiga = k.id_knjiga
-        INNER JOIN status_primjerka AS sp
-            ON p.id_status = sp.id_status
-        INNER JOIN lokacija AS l
-            ON p.id_lokacija = l.id_lokacija
-        WHERE sp.naziv_statusa IN ('Osteceno', 'Izgubljeno', 'Rezervirano');
-
-SELECT *
-	FROM problematicni_primjerci
-	WHERE kat = '1. kat';
-
--- 2. Pogled: knjige_po_zanru
--- Prikazuje broj knjiga u svakom žanru.
--- Uključuje i žanrove bez pridruženih knjiga.
-
-CREATE VIEW knjige_po_zanru AS
-	SELECT z.id_zanr, z.naziv_zanra, COALESCE(COUNT(kz.id_knjiga), 0) AS broj_knjiga
-		FROM zanr AS z
-		LEFT JOIN knjiga_zanr AS kz
-			ON z.id_zanr = kz.id_zanr
-		GROUP BY z.id_zanr, z.naziv_zanra;
-
-SELECT *
-	FROM knjige_po_zanru
-	WHERE broj_knjiga > 5
-	ORDER BY broj_knjiga DESC;
-
--- 3. Pogled: fond_po_odjelu
--- Prikazuje ukupan broj primjeraka po odjelima knjižnice.
-
-CREATE VIEW fond_po_odjelu AS
-	SELECT l.odjel, COUNT(p.id_primjerak) AS broj_primjeraka
-		FROM lokacija AS l
-		LEFT JOIN primjerak AS p
-			ON l.id_lokacija = p.id_lokacija
-		GROUP BY l.odjel;
-
-SELECT *
-	FROM fond_po_odjelu;
-
--- 4. Pogled: dostupni_primjerci
--- Prikazuje sve trenutno dostupne primjerke knjiga i njihove lokacije.
-
-CREATE VIEW dostupni_primjerci AS
-	SELECT k.naslov, p.inventarni_broj, l.odjel, l.polica, l.kat
-		FROM knjiga AS k
-		INNER JOIN primjerak AS p
-			ON k.id_knjiga = p.id_knjiga
-		INNER JOIN status_primjerka AS sp
-			ON p.id_status = sp.id_status
-		INNER JOIN lokacija AS l
-			ON p.id_lokacija = l.id_lokacija
-		WHERE sp.naziv_statusa = 'Dostupno';
-
-SELECT *
-	FROM dostupni_primjerci;
-
--- UPITI --
-
--- 1. Upit: prikaz svih oštećenih i izgubljenih primjeraka
--- Prikazuje primjerke knjiga koji imaju status 'Osteceno'
--- ili 'Izgubljeno'.
--- Upit služi zaposlenicima za evidenciju problematičnih primjeraka.
-
-SELECT k.naslov, p.inventarni_broj, sp.naziv_statusa, l.odjel, l.polica
-	FROM knjiga AS k
-	INNER JOIN primjerak AS p
-		ON k.id_knjiga = p.id_knjiga
+CREATE OR REPLACE VIEW analiza_nedostupnih_primjeraka AS
+SELECT	p.id_primjerak,
+		p.inventarni_broj,
+		k.naslov,
+		sp.naziv AS status_primjerka,
+		sp.opis AS opis_statusa,
+		l.odjel,
+		l.polica,
+		l.kat
+	FROM primjerak AS p
+	INNER JOIN knjiga AS k
+		ON p.id_knjiga = k.id_knjiga
 	INNER JOIN status_primjerka AS sp
 		ON p.id_status = sp.id_status
 	INNER JOIN lokacija AS l
 		ON p.id_lokacija = l.id_lokacija
-	WHERE sp.naziv_statusa = 'Osteceno'
+	WHERE sp.dostupan = FALSE;
 
-UNION
+-- Upit 1.
+-- Odjeli sa statusima nedostupnih primjeraka iznad prosjeka
 
-SELECT k.naslov, p.inventarni_broj, sp.naziv_statusa, l.odjel, l.polica
-	FROM knjiga AS k
-	INNER JOIN primjerak AS p
-		ON k.id_knjiga = p.id_knjiga
-	INNER JOIN status_primjerka AS sp
-		ON p.id_status = sp.id_status
-	INNER JOIN lokacija AS l
-		ON p.id_lokacija = l.id_lokacija
-	WHERE sp.naziv_statusa = 'Izgubljeno';
+SELECT  anp.odjel,
+		anp.kat,
+		anp.status_primjerka,
+		COUNT(anp.id_primjerak) AS broj_nedostupnih_primjeraka
+	FROM analiza_nedostupnih_primjeraka AS anp
+	WHERE anp.kat != 'Skladiste'
+	GROUP BY anp.odjel, anp.kat, anp.status_primjerka
+	HAVING COUNT(anp.id_primjerak) > 
+		(
+			SELECT AVG(broj_nedostupnih)
+				FROM (
+					SELECT COUNT(anp2.id_primjerak) AS broj_nedostupnih
+						FROM analiza_nedostupnih_primjeraka AS anp2
+						WHERE anp2.kat != 'Skladiste'
+						GROUP BY anp2.odjel, anp2.status_primjerka
+				) AS prosjek_nedostupnih
+		)
+	ORDER BY broj_nedostupnih_primjeraka DESC,
+			 anp.odjel ASC,
+			 anp.status_primjerka ASC;
 
--- 2. Upit: prikaz svih žanrova i broja knjiga u svakom žanru
--- Prikazuje sve žanrove, uključujući i one koji trenutno nemaju knjige.
--- COALESCE funkcija prikazuje vrijednost 0 za žanrove bez knjiga.
+-- ===========================================================================================================
+-- Pregled 2.
+-- Broj primjeraka po lokacijama unutar svakog odjela
 
-SELECT z.naziv_zanra, COALESCE(COUNT(kz.id_knjiga), 0) AS broj_knjiga
+CREATE OR REPLACE VIEW fond_po_odjelu AS
+SELECT	l.id_lokacija,
+		l.odjel,
+		l.kat,
+		COUNT(p.id_primjerak) AS broj_primjeraka
+	FROM lokacija AS l
+	LEFT JOIN primjerak AS p
+		ON l.id_lokacija = p.id_lokacija
+	GROUP BY l.id_lokacija, l.odjel, l.kat;
+
+-- Upit 2.
+-- Odjeli s natprosječnim ukupnim brojem primjeraka i osnovne statistike po lokaciji
+
+SELECT	fpo.odjel,
+		fpo.kat,
+		SUM(fpo.broj_primjeraka) AS ukupan_broj_primjeraka,
+		ROUND(AVG(fpo.broj_primjeraka), 2) AS prosjecan_broj_primjeraka,
+		MAX(fpo.broj_primjeraka) AS najveci_broj_primjeraka_na_lokaciji,
+		MIN(fpo.broj_primjeraka) AS najmanji_broj_primjeraka_na_lokaciji
+	FROM fond_po_odjelu AS fpo
+	GROUP BY fpo.odjel, fpo.kat
+	HAVING SUM(fpo.broj_primjeraka) >
+	(
+		SELECT AVG(broj_primjeraka)
+			FROM fond_po_odjelu
+	)
+	ORDER BY ukupan_broj_primjeraka DESC,
+			 prosjecan_broj_primjeraka DESC,
+			 fpo.odjel, ASC;
+
+-- ===========================================================================================================
+-- Pregled 3.
+-- Zastupljenost knjiga i primjeraka po žanrovima knjižničnog fonda
+
+CREATE OR REPLACE VIEW analiza_fonda_po_zanru AS
+SELECT	z.id_zanr,
+		z.naziv AS naziv_zanra
+		COUNT(DISTINCT k.id_knjiga) AS broj_knjiga,
+		COUNT(p.id_primjerak) AS broj_primjeraka
 	FROM zanr AS z
 	LEFT JOIN knjiga_zanr AS kz
 		ON z.id_zanr = kz.id_zanr
-	GROUP BY z.id_zanr, z.naziv_zanra
-	ORDER BY broj_knjiga DESC;
-
--- 3. Upit: knjige nabavljene između 2023. i 2025. godine
--- Prikazuje primjerke knjiga koji su nabavljeni
--- između 1.1.2023. i 31.12.2025.
--- Upit služi za pregled novijih nabava knjižničnog fonda.
-
-SELECT k.naslov, p.inventarni_broj, p.datum_nabave, l.odjel
-	FROM knjiga AS k
-	INNER JOIN primjerak AS p
+	LEFT JOIN knjiga AS k
+		ON kz.id_knjiga = k.id_knjiga
+	LEFT JOIN primjerak AS p
 		ON k.id_knjiga = p.id_knjiga
-	INNER JOIN lokacija AS l
-		ON p.id_lokacija = l.id_lokacija
-	WHERE p.datum_nabave BETWEEN '2023-01-01' AND '2025-12-31'
-	ORDER BY p.datum_nabave DESC;
+	GROUP BY z.id_zanr, z.naziv;
 
--- 4. Upit: oštećeni ili rezervirani primjerci na drugom katu
--- Prikazuje primjerke knjiga koji imaju status
--- 'Osteceno' ili 'Rezervirano'
--- i nalaze se na 1. katu knjižnice.
--- Upit služi za evidenciju problematičnih primjeraka po lokaciji.
+-- Upit 3.
+-- Žanrovi s natprosjećnim brojem primjeraka i prosjekom po knjizi
 
-SELECT k.naslov, p.inventarni_broj, sp.naziv_statusa, l.odjel, l.polica, l.kat
-	FROM knjiga AS k
-	INNER JOIN primjerak AS p
-		ON k.id_knjiga = p.id_knjiga
-	INNER JOIN status_primjerka AS sp
-		ON p.id_status = sp.id_status
-	INNER JOIN lokacija AS l
-		ON p.id_lokacija = l.id_lokacija
-	WHERE (sp.naziv_statusa = 'Osteceno' OR sp.naziv_statusa = 'Rezervirano') AND l.kat = '2. kat'
-	ORDER BY l.kat, l.odjel, k.naslov;
+SELECT	afpz.naziv_zanra,
+		afpz.broj_knjiga,
+		afpz.broj_primjeraka,
+		ROUND(
+			afpz.broj_primjeraka * 1.0 / afpz.broj_knjiga, 2
+		) AS prosjecan_broj_primjeraka_po_knjizi
+	FROM analiza_fonda_po_zanru AS afpz
+	WHERE afpz.broj_primjeraka > 
+	(
+		SELECT AVG(afpz2.broj_primjeraka)
+			FROM analiza_fonda_po_zanru AS afpz2
+	)
+	AND afpz.broj_knjiga > 0
+	ORDER BY afpz.broj_primjeraka DESC,
+			 prosjecan_broj_primjeraka_po_knjizi DESC,
+			 afpz.naziv_zanra ASC;

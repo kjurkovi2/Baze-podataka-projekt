@@ -18,13 +18,15 @@ CREATE TABLE izdavac (
 
 CREATE TABLE zanr (
     id_zanr INT PRIMARY KEY AUTO_INCREMENT,
-    naziv_zanra VARCHAR(50) NOT NULL UNIQUE,
+    naziv VARCHAR(50) NOT NULL UNIQUE,
     opis VARCHAR(255)
 );
 
 CREATE TABLE status_primjerka (
     id_status INT PRIMARY KEY AUTO_INCREMENT,
-    naziv_statusa VARCHAR(30) NOT NULL UNIQUE
+    naziv VARCHAR(30) NOT NULL UNIQUE,
+    opis VARCHAR(255),
+    dostupan BOOLEAN NOT NULL
 );
 
 CREATE TABLE lokacija (
