@@ -1,6 +1,6 @@
 -- AUTOR: Lorena Pavličić
 
-USE biblioteka;
+USE knjiznica;
 
 -- ------------------------------------------------------------
 -- POGLEDI

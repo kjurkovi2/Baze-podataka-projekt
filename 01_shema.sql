@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS biblioteka;
-CREATE DATABASE biblioteka;
-USE biblioteka;
+DROP DATABASE IF EXISTS knjiznica;
+CREATE DATABASE knjiznica;
+USE knjiznica;
 
 CREATE TABLE autor (
     id_autor INT PRIMARY KEY AUTO_INCREMENT,
