@@ -2,6 +2,7 @@ DROP DATABASE IF EXISTS knjiznica;
 CREATE DATABASE knjiznica;
 USE knjiznica;
 
+-- ### Lorena ###
 CREATE TABLE autor (
     id_autor INT PRIMARY KEY AUTO_INCREMENT,
     ime VARCHAR(50) NOT NULL,
@@ -10,18 +11,21 @@ CREATE TABLE autor (
     drzava VARCHAR(50)
 );
 
+-- ### LORENA PAVLICIC ###
 CREATE TABLE izdavac (
     id_izdavac INT PRIMARY KEY AUTO_INCREMENT,
     naziv VARCHAR(100) NOT NULL,
     drzava VARCHAR(50)
 );
 
+-- ### VICE JUKIC ###
 CREATE TABLE zanr (
     id_zanr INT PRIMARY KEY AUTO_INCREMENT,
     naziv VARCHAR(50) NOT NULL UNIQUE,
     opis VARCHAR(255)
 );
 
+-- ### VICE JUKIC ###
 CREATE TABLE status_primjerka (
     id_status INT PRIMARY KEY AUTO_INCREMENT,
     naziv VARCHAR(30) NOT NULL UNIQUE,
@@ -29,6 +33,7 @@ CREATE TABLE status_primjerka (
     dostupan BOOLEAN NOT NULL
 );
 
+-- ### VICE JUKIC ###
 CREATE TABLE lokacija (
     id_lokacija INT PRIMARY KEY AUTO_INCREMENT,
     odjel VARCHAR(50) NOT NULL,
@@ -36,6 +41,7 @@ CREATE TABLE lokacija (
     kat VARCHAR(20)
 );
 
+-- ### KELVIN JURKOVIC ###
 CREATE TABLE clan (
     id_clan INT PRIMARY KEY AUTO_INCREMENT,
     ime VARCHAR(50) NOT NULL,
@@ -46,6 +52,7 @@ CREATE TABLE clan (
     status VARCHAR(30) NOT NULL
 );
 
+-- ### LUCIJA BALJAK ###
 CREATE TABLE zaposlenik (
     id_zaposlenik INT PRIMARY KEY AUTO_INCREMENT,
     ime VARCHAR(50) NOT NULL,
@@ -55,6 +62,7 @@ CREATE TABLE zaposlenik (
     datum_zaposlenja DATE NOT NULL
 );
 
+-- ### LORENA PAVLICIC / LUCIJA BALJAK / KELVIN JURKOVIC / VICE JUKIC ###
 CREATE TABLE knjiga (
     id_knjiga INT PRIMARY KEY AUTO_INCREMENT,
     id_izdavac INT NOT NULL,
@@ -71,6 +79,7 @@ CREATE TABLE knjiga (
     CHECK (broj_stranica IS NULL OR broj_stranica > 0)
 );
 
+-- ### LORENA PAVLICIC ###
 CREATE TABLE knjiga_autor (
     id_knjiga INT NOT NULL,
     id_autor INT NOT NULL,
@@ -89,6 +98,7 @@ CREATE TABLE knjiga_autor (
     CHECK (redoslijed_autora > 0)
 );
 
+-- ### VICE JUKIC ###
 CREATE TABLE knjiga_zanr (
     id_knjiga INT NOT NULL,
     id_zanr INT NOT NULL,
@@ -104,6 +114,7 @@ CREATE TABLE knjiga_zanr (
         ON DELETE RESTRICT
 );
 
+-- ### LUCIJA BALJAK / KELVIN JURKOVIC / VICE JUKIC ###
 CREATE TABLE primjerak (
     id_primjerak INT PRIMARY KEY AUTO_INCREMENT,
     id_knjiga INT NOT NULL,
@@ -125,6 +136,7 @@ CREATE TABLE primjerak (
         ON DELETE RESTRICT
 );
 
+-- ### KELVIN JURKOVIC ###
 CREATE TABLE rezervacija (
     id_rezervacija INT PRIMARY KEY AUTO_INCREMENT,
     id_clan INT NOT NULL,
@@ -141,6 +153,8 @@ CREATE TABLE rezervacija (
         ON DELETE RESTRICT
 );
 
+
+-- ### KELVIN JURKOVIC / LUCIJA BALJAK ###
 CREATE TABLE posudba (
     id_posudba INT PRIMARY KEY AUTO_INCREMENT,
     id_clan INT NOT NULL,
@@ -167,6 +181,7 @@ CREATE TABLE posudba (
     CHECK (datum_vracanja IS NULL OR datum_vracanja >= datum_posudbe)
 );
 
+-- ### LUCIJA BALJAK ###
 CREATE TABLE razlog_kazne (
     id_razlog INT PRIMARY KEY AUTO_INCREMENT,
     naziv_razloga VARCHAR(30) NOT NULL UNIQUE,
@@ -175,6 +190,7 @@ CREATE TABLE razlog_kazne (
     CHECK (osnovna_cijena >= 0)
 );
 
+-- ### LUCIJA BALJAK ###
 CREATE TABLE kazna (
     id_kazna INT PRIMARY KEY AUTO_INCREMENT,
     id_posudba INT NOT NULL,
