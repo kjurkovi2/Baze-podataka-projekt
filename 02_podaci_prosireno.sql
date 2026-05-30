@@ -4,7 +4,7 @@
 -- Ne pokretati vise puta bez resetiranja baze jer koristi eksplicitne ID vrijednosti.
 -- =====================================================
 
-USE biblioteka;
+USE knjiznica;
 
 
 -- Dodatni statusi primjeraka

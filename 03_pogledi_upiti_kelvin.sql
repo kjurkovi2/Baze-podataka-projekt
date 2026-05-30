@@ -1,6 +1,6 @@
 -- AUTOR: Kelvin Jurkovic
 
-USE biblioteka;
+USE knjiznica;
 
 -- 1.) Pogled prvi:
 --     Prikazi zbirnu statistiku posudbi za svakog clana knjiznice,

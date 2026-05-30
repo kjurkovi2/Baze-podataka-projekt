@@ -1,4 +1,4 @@
-USE biblioteka;
+USE knjiznica;
 
 INSERT INTO status_primjerka (id_status, naziv, opis, dostupan) VALUES
 (1, 'Dostupno', 'Primjerak je dostupan korisnicima knjiznice.', TRUE),

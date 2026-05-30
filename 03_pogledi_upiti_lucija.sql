@@ -1,6 +1,6 @@
 -- AUTOR: Lucija Baljak -----
 
-USE biblioteka;
+USE knjiznica;
 
 
 -- 1. POGLED: ocekivane_kazne
