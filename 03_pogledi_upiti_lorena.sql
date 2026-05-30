@@ -8,7 +8,7 @@ USE knjiznica;
 
 -- Pogled 1:
 -- Prikazuje osnovni bibliografski katalog knjiga, 
--- uključujuči podatke o knjizi, izdavaču i autoru.
+-- uključujući podatke o knjizi, izdavaču i autoru.
 
 CREATE OR REPLACE VIEW v_bibliografski_katalog AS
 SELECT 
