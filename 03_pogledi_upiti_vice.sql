@@ -25,7 +25,7 @@ SELECT	p.id_primjerak,
 	WHERE sp.dostupan = FALSE;
 
 -- Upit 1.
--- Odjeli sa statusima nedostupnih primjeraka iznad prosjeka
+-- Odjeli i statusi primjeraka s natprosječnim brojem nedostupnih primjeraka
 
 SELECT  anp.odjel,
 		anp.kat,
@@ -80,7 +80,7 @@ SELECT	fpo.odjel,
 	)
 	ORDER BY ukupan_broj_primjeraka DESC,
 			 prosjecan_broj_primjeraka DESC,
-			 fpo.odjel, ASC;
+			 fpo.odjel ASC;
 
 -- ===========================================================================================================
 -- Pregled 3.
@@ -88,7 +88,7 @@ SELECT	fpo.odjel,
 
 CREATE OR REPLACE VIEW analiza_fonda_po_zanru AS
 SELECT	z.id_zanr,
-		z.naziv AS naziv_zanra
+		z.naziv AS naziv_zanra,
 		COUNT(DISTINCT k.id_knjiga) AS broj_knjiga,
 		COUNT(p.id_primjerak) AS broj_primjeraka
 	FROM zanr AS z
@@ -101,7 +101,7 @@ SELECT	z.id_zanr,
 	GROUP BY z.id_zanr, z.naziv;
 
 -- Upit 3.
--- Žanrovi s natprosjećnim brojem primjeraka i prosjekom po knjizi
+-- Žanrovi s natprosječnim brojem primjeraka i prosjekom po knjizi
 
 SELECT	afpz.naziv_zanra,
 		afpz.broj_knjiga,
