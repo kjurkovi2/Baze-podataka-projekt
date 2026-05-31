@@ -123,7 +123,7 @@ SELECT
     
     COUNT(
 		DISTINCT CASE
-			WHEN sp.naziv_statusa = 'Dostupno'
+			WHEN sp.naziv = 'Dostupno'
 			THEN pr.id_primjerak
         END
 	) AS broj_dostupnih_primjeraka,
