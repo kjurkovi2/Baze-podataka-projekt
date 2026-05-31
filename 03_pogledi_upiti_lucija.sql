@@ -1,15 +1,15 @@
--- AUTOR: Lucija Baljak -----
+--- AUTOR: Lucija Baljak -----
 
 USE knjiznica;
 
 
--- 1. POGLED: ocekivane_kazne
--- Pregled aktivnih posudbi s kašnjenjem i izračunatim iznosom kazne.
--- Namijenjen knjižničaru pri dolasku člana po novu posudbu —
--- omogućuje brzi pregled svih kašnjenja i iznosa koji treba naplatiti
--- prije kreiranja nove posudbe.
+-- 1. POGLED: izracun_kazne
+-- Pregled aktivnih posudbi s kašnjenjem ako postoji i izračunatim iznosom kazne.
+-- Namijenjen knjižničaru za evidenciju i zaprimanje povratka određenog primjerka knjige.
+-- Omogućuje brzi pregled svih kašnjenja i iznosa koji treba naplatiti
 
-CREATE OR REPLACE VIEW ocekivane_kazne AS
+
+CREATE OR REPLACE VIEW izracun_kazne AS
 SELECT
     c.id_clan,
     CONCAT(c.ime, ' ', c.prezime) AS clan,
@@ -29,25 +29,24 @@ WHERE p.status = 'Aktivno'
   AND rk.naziv_razloga = 'Kasnjenje';
 
 -- TEST
--- SELECT * FROM ocekivane_kazne
+SELECT * FROM izracun_kazne;
 
 
--- SELECT 1: Pregled kašnjenja po članu
--- Knjižničar pretražuje po id_clan ili inventarnom broju
--- kako bi vidio sve aktivne posudbe s kašnjenjem i iznosom kazne
--- prije odobravanja nove posudbe.
+-- SELECT 1: Pregled kašnjenja po članu i inventarnom broju primjerka
+-- Knjižničar pretražuje po id_clan i inventarnom broju
+-- kako bi vidio aktivnu posudbu i da li postoji kašnjenje
 
 SELECT
-    ok.clan,
-    ok.inventarni_broj,
-    ok.naslov,
-    ok.rok_vracanja,
-    ok.dana_kasnjenja,
-    ok.osnovna_cijena,
-    ok.izracunata_kazna
-FROM ocekivane_kazne AS ok
-WHERE ok.id_clan = 1
-ORDER BY ok.dana_kasnjenja DESC;
+	ik.id_clan,
+    ik.clan,
+    ik.inventarni_broj,
+    ik.naslov,
+    ik.rok_vracanja,
+    ik.dana_kasnjenja,
+    ik.izracunata_kazna
+FROM izracun_kazne AS ik
+WHERE ik.id_clan = 1
+  AND ik.inventarni_broj = "INV-0041";
 
 -- 2. POGLED: zaposlenici_statistika
 -- Mjesecna statistika svakog zaposlenika.
@@ -61,22 +60,14 @@ SELECT
     z.datum_zaposlenja,
     DATE_FORMAT(p.datum_posudbe, '%Y') AS godina,
     DATE_FORMAT(p.datum_posudbe, '%Y-%m') AS mjesec,
-    COUNT(DISTINCT p.id_posudba) AS izdano_knjiga,
-    SUM(CASE WHEN p.datum_vracanja IS NOT NULL AND ka.id_kazna IS NULL THEN 1 ELSE 0 END) AS vraceno_bez_kazne,
-    COUNT(DISTINCT CASE WHEN ka.id_kazna IS NOT NULL THEN p.id_posudba END) AS posudbi_s_kaznom,
-    SUM(CASE WHEN rk.naziv_razloga = 'Kasnjenje' THEN 1 ELSE 0 END) AS kazni_kasnjenje,
-    SUM(CASE WHEN rk.naziv_razloga = 'Ostecenje' THEN 1 ELSE 0 END) AS kazni_ostecenje,
-    SUM(CASE WHEN rk.naziv_razloga = 'Gubitak' THEN 1 ELSE 0 END) AS kazni_gubitak,
-    COALESCE(SUM(ka.iznos), 0) AS obracunato_kazni,
-    COALESCE(SUM(CASE WHEN ka.placeno = TRUE THEN ka.iznos ELSE 0 END), 0) AS naplaceno_kazni
+    COUNT(p.id_posudba) AS izdano_knjiga
 FROM zaposlenik AS z
 INNER JOIN posudba AS p ON z.id_zaposlenik = p.id_zaposlenik
-LEFT JOIN kazna AS ka ON p.id_posudba = ka.id_posudba
-LEFT JOIN razlog_kazne AS rk ON rk.id_razlog = ka.id_razlog
 GROUP BY z.id_zaposlenik, godina, mjesec;
 
 -- TEST
--- SELECT * FROM zaposlenici_statistika
+SELECT * FROM zaposlenici_statistika;
+
 
 
 -- SELECT 2: Ucinkovitost zaposlenika — godisnji izvjestaj za 2025.
@@ -89,12 +80,6 @@ SELECT
     zs.radno_mjesto,
     zs.datum_zaposlenja,
     SUM(zs.izdano_knjiga) AS ukupno_izdano,
-    SUM(zs.posudbi_s_kaznom) AS ukupno_s_kaznom,
-    SUM(zs.kazni_kasnjenje) AS kasnjenja,
-    SUM(zs.kazni_ostecenje) AS ostecenja,
-    SUM(zs.kazni_gubitak) AS gubici,
-    SUM(zs.obracunato_kazni) AS ukupno_obracunato,
-    SUM(zs.naplaceno_kazni) AS ukupno_naplaceno,
     MAX(zs.izdano_knjiga) AS najbolji_mjesec
 FROM zaposlenici_statistika AS zs
 WHERE zs.godina = '2025'
@@ -117,7 +102,7 @@ FROM kazna AS ka
 INNER JOIN razlog_kazne AS rk ON ka.id_razlog = rk.id_razlog;
 
 -- TEST 
--- SELECT * FROM kazne_pregled
+SELECT * FROM kazne_pregled;
 
 
 -- SELECT 3: Kronoloski ispisane kazne po mjesecima
