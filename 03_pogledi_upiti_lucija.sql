@@ -1,10 +1,10 @@
---- AUTOR: Lucija Baljak -----
+-- AUTOR: Lucija Baljak --
 
 USE knjiznica;
 
 
 -- 1. POGLED: izracun_kazne
--- Pregled aktivnih posudbi s kašnjenjem ako postoji i izračunatim iznosom kazne.
+-- Pregled aktivnih posudbi s kašnjenjem i izračunatim iznosom kazne.
 -- Namijenjen knjižničaru za evidenciju i zaprimanje povratka određenog primjerka knjige.
 -- Omogućuje brzi pregled svih kašnjenja i iznosa koji treba naplatiti
 
