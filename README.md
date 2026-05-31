@@ -26,3 +26,4 @@ izrada sheme, punjenje podacima te izrada pogleda i upita).
 | `03_pogledi_upiti_lucija.sql` | Pogledi i upiti (Lucija) |
 | `03_pogledi_upiti_vice.sql` | Pogledi i upiti (Vice) |
 | `04_DOKUMENTACIJA.pdf` | Dokumentacija projekta |
+| `05_youtube_video_prezentacija.txt` | Video prezentacija projekta na Youtubeu |
